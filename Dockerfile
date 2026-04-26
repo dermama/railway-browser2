@@ -26,10 +26,11 @@ ENV RESOLUTION=1280x720x24
 # Create necessary directories
 RUN mkdir -p /root/.vnc
 
-# Copy configuration files
+# Copy configuration files and extension
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
+COPY extension /extension
 
 # Expose the port Railway will use
 EXPOSE 8080
