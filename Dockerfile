@@ -16,9 +16,9 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install noVNC 1.4.0 from GitHub (fixes addTouchSpecificHandlers null element bug)
+# Install noVNC 1.4.0 from GitHub - use vnc_lite.html to avoid addTouchSpecificHandlers crash
 RUN git clone --depth 1 --branch v1.4.0 https://github.com/novnc/noVNC.git /usr/share/novnc \
-    && ln -s /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+    && ln -s /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
 
 # Environment variables
 ENV DISPLAY=:0
