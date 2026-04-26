@@ -1,11 +1,11 @@
-FROM ubuntu:22.04
+FROM debian:bookworm-slim
 
 # Avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    chromium-browser \
+    chromium \
     xvfb \
     x11vnc \
     fluxbox \
