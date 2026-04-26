@@ -11,13 +11,14 @@ RUN apt-get update && apt-get install -y \
     fluxbox \
     supervisor \
     net-tools \
-    novnc \
     websockify \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up noVNC
-RUN ln -s /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+# Install noVNC 1.4.0 from GitHub (fixes addTouchSpecificHandlers null element bug)
+RUN git clone --depth 1 --branch v1.4.0 https://github.com/novnc/noVNC.git /usr/share/novnc \
+    && ln -s /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
 # Environment variables
 ENV DISPLAY=:0
