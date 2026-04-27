@@ -2,6 +2,7 @@ import http.server
 import socketserver
 import subprocess
 import os
+import time
 
 PORT = 8082
 
@@ -23,10 +24,11 @@ HTML = """
         .btn-start:hover {{ background-color: #16a34a; transform: translateY(-2px); }}
         .btn-stop {{ background-color: #ef4444; color: white; }}
         .btn-stop:hover {{ background-color: #dc2626; transform: translateY(-2px); }}
-        .btn-view {{ background-color: #38bdf8; color: white; }}
+        .btn-view {{ background-color: #38bdf8; color: white; border: 2px solid #38bdf8; }}
         .btn-view:hover {{ background-color: #0ea5e9; transform: translateY(-2px); }}
         .footer {{ margin-top: 40px; color: #64748b; font-size: 13px; line-height: 1.6; }}
         .timer {{ color: #fbbf24; font-size: 14px; margin-top: 10px; font-weight: bold; }}
+        .loading {{ color: #38bdf8; font-size: 14px; display: none; margin-top: 10px; }}
     </style>
 </head>
 <body>
@@ -40,6 +42,8 @@ HTML = """
 
         {controls}
         
+        <div id="loader" class="loading">جاري معالجة الطلب... يرجى الانتظار</div>
+
         <div class="footer">
             💎 المتصفح يعمل الآن في الخلفية 24/7 ويفتح صفحة AI Studio.<br>
             ⚠️ البث المرئي يستهلك موارد السيرفر، يرجى إغلاقه عند الانتهاء لتوفير التكاليف.
@@ -47,8 +51,11 @@ HTML = """
     </div>
 
     <script>
+        function showLoading() {{
+            document.getElementById('loader').style.display = 'block';
+        }}
+
         if ("{is_running}" === "True") {{
-            // إيقاف تلقائي بعد 20 دقيقة
             setTimeout(() => {{
                 fetch('/stop').then(() => window.location.reload());
             }}, 20 * 60 * 1000);
@@ -59,31 +66,43 @@ HTML = """
 """
 
 class DashboardHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        print(f"[DASHBOARD] {format%args}")
+
     def do_GET(self):
+        self.log_message("Request: %s", self.path)
+        
         if self.path == '/start':
-            subprocess.run(["supervisorctl", "start", "x11vnc", "novnc", "fluxbox"], capture_output=True)
+            print("[DASHBOARD] Starting VNC services...")
+            subprocess.run(["supervisorctl", "start", "fluxbox", "x11vnc", "novnc"], capture_output=True)
+            time.sleep(2) # Wait for processes to initialize
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
+            
         elif self.path == '/stop':
-            subprocess.run(["supervisorctl", "stop", "x11vnc", "novnc", "fluxbox"], capture_output=True)
+            print("[DASHBOARD] Stopping VNC services...")
+            subprocess.run(["supervisorctl", "stop", "novnc", "x11vnc", "fluxbox"], capture_output=True)
+            time.sleep(1)
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
+            
         elif self.path == '/':
             check = subprocess.run(["supervisorctl", "status", "x11vnc"], capture_output=True, text=True)
             is_running = "RUNNING" in check.stdout
+            print(f"[DASHBOARD] Status check: {is_running}")
             
             status_text = "🟢 البث المباشر يعمل" if is_running else "🔴 البث متوقف (وضع التوفير)"
             
             if is_running:
                 controls = f"""
                 <a href="/vnc/" class="btn btn-view" target="_blank">📺 الدخول إلى المتصفح</a>
-                <a href="/stop" class="btn btn-stop">⏹️ إيقاف البث فوراً</a>
+                <a href="/stop" class="btn btn-stop" onclick="showLoading()">⏹️ إيقاف البث فوراً</a>
                 <div class="timer">⏱️ سيتم الإيقاف التلقائي خلال 20 دقيقة</div>
                 """
             else:
-                controls = '<a href="/start" class="btn btn-start">▶️ تشغيل البث المرئي</a>'
+                controls = '<a href="/start" class="btn btn-start" onclick="showLoading()">▶️ تشغيل البث المرئي</a>'
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
@@ -93,5 +112,5 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404)
 
 with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
-    print("Dashboard serving at port", PORT)
+    print(f"Dashboard serving at port {PORT}")
     httpd.serve_forever()
