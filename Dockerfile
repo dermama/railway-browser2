@@ -22,7 +22,7 @@ RUN git clone --depth 1 --branch v1.4.0 https://github.com/novnc/noVNC.git /usr/
 
 # Environment variables
 ENV DISPLAY=:0
-ENV RESOLUTION=1280x720x24
+ENV RESOLUTION=1024x768x16
 
 # Create necessary directories
 RUN mkdir -p /root/.vnc
@@ -32,8 +32,6 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 COPY extension /extension
-COPY chrome-data /chrome-data
-RUN chmod -R 777 /chrome-data
 
 # Expose the port Railway will use
 EXPOSE 8080
