@@ -1,170 +1,97 @@
-import os
+import http.server
+import socketserver
 import subprocess
-from flask import Flask, render_template_string, jsonify, request
+import os
 
-app = Flask(__name__)
+PORT = 8082
 
-# CSS & HTML Template for a Premium Look
-HTML_TEMPLATE = """
+HTML = """
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NodeMind | مركز التحكم</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>NodeMind - لوحة التحكم</title>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --primary: #38bdf8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --text: #f8fafc;
-        }
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .container {
-            background: var(--card);
-            padding: 2rem;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            width: 400px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        h1 { font-weight: 600; margin-bottom: 0.5rem; color: var(--primary); }
-        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            transition: all 0.3s;
-        }
-        .status-online { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .status-offline { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .btn-start { background: var(--primary); color: #000; }
-        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4); }
-        .btn-stop { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-stop:hover { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger); }
-        
-        .vnc-link {
-            margin-top: 1.5rem;
-            display: block;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 1rem;
-        }
-        .footer { margin-top: 2rem; font-size: 0.7rem; color: #475569; }
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: white; text-align: center; padding: 50px; }}
+        .card {{ background-color: #1e293b; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: inline-block; min-width: 350px; border: 1px solid #334155; }}
+        h1 {{ color: #38bdf8; margin-bottom: 10px; font-size: 28px; }}
+        .subtitle {{ color: #94a3b8; margin-bottom: 30px; font-size: 14px; }}
+        .status {{ margin-bottom: 30px; padding: 15px; border-radius: 8px; background: #334155; font-size: 18px; }}
+        .btn {{ display: block; width: 100%; padding: 15px; margin: 12px 0; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; text-decoration: none; box-sizing: border-box; }}
+        .btn-start {{ background-color: #22c55e; color: white; }}
+        .btn-start:hover {{ background-color: #16a34a; transform: translateY(-2px); }}
+        .btn-stop {{ background-color: #ef4444; color: white; }}
+        .btn-stop:hover {{ background-color: #dc2626; transform: translateY(-2px); }}
+        .btn-view {{ background-color: #38bdf8; color: white; }}
+        .btn-view:hover {{ background-color: #0ea5e9; transform: translateY(-2px); }}
+        .footer {{ margin-top: 40px; color: #64748b; font-size: 13px; line-height: 1.6; }}
+        .timer {{ color: #fbbf24; font-size: 14px; margin-top: 10px; font-weight: bold; }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>NodeMind</h1>
-        <p>مركز تحكم البث البعيد</p>
+    <div class="card">
+        <h1>🚀 NodeMind VTON</h1>
+        <div class="subtitle">نظام التحكم في موارد السيرفر</div>
         
-        <div id="statusBadge" class="status-badge status-offline">جاري فحص الحالة...</div>
-        
-        <button onclick="control('start')" class="btn btn-start">🚀 تشغيل بث الشاشة</button>
-        <button onclick="control('stop')" class="btn btn-stop">⏹️ قطع البث (توفير الموارد)</button>
-        
-        <div id="vncArea" style="display:none;">
-            <a href="/vnc/vnc_lite.html" target="_blank" class="vnc-link">👁️ فتح نافذة البث في صفحة جديدة</a>
+        <div class="status">
+            الحالة: <strong>{status}</strong>
         </div>
+
+        {controls}
         
-        <div class="footer">NodeMind Browser Protocol v3.5 | Railway Edition</div>
+        <div class="footer">
+            💎 المتصفح يعمل الآن في الخلفية 24/7 ويفتح صفحة AI Studio.<br>
+            ⚠️ البث المرئي يستهلك موارد السيرفر، يرجى إغلاقه عند الانتهاء لتوفير التكاليف.
+        </div>
     </div>
 
     <script>
-        function updateStatus() {
-            fetch('/status').then(r => r.json()).then(data => {
-                const badge = document.getElementById('statusBadge');
-                const vncArea = document.getElementById('vncArea');
-                if (data.online) {
-                    badge.innerText = '● البث يعمل الآن';
-                    badge.className = 'status-badge status-online';
-                    vncArea.style.display = 'block';
-                } else {
-                    badge.innerText = '○ البث متوقف حالياً';
-                    badge.className = 'status-badge status-offline';
-                    vncArea.style.display = 'none';
-                }
-            });
-        }
-
-        function control(action) {
-            const btn = event.target;
-            btn.style.opacity = '0.5';
-            btn.innerText = 'جاري التنفيذ...';
-            
-            fetch('/control/' + action).then(r => r.json()).then(data => {
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            });
-        }
-
-        updateStatus();
-        setInterval(updateStatus, 5000);
+        if ("{is_running}" === "True") {{
+            // إيقاف تلقائي بعد 20 دقيقة
+            setTimeout(() => {{
+                fetch('/stop').then(() => window.location.reload());
+            }}, 20 * 60 * 1000);
+        }}
     </script>
 </body>
 </html>
 """
 
-def is_vnc_running():
-    try:
-        output = subprocess.check_output(["supervisorctl", "status", "x11vnc"]).decode()
-        return "RUNNING" in output
-    except:
-        return False
+class DashboardHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/start':
+            subprocess.run(["supervisorctl", "start", "x11vnc", "novnc", "fluxbox"], capture_output=True)
+            self.send_response(303)
+            self.send_header('Location', '/')
+            self.end_headers()
+        elif self.path == '/stop':
+            subprocess.run(["supervisorctl", "stop", "x11vnc", "novnc", "fluxbox"], capture_output=True)
+            self.send_response(303)
+            self.send_header('Location', '/')
+            self.end_headers()
+        elif self.path == '/':
+            check = subprocess.run(["supervisorctl", "status", "x11vnc"], capture_output=True, text=True)
+            is_running = "RUNNING" in check.stdout
+            
+            status_text = "🟢 البث المباشر يعمل" if is_running else "🔴 البث متوقف (وضع التوفير)"
+            
+            if is_running:
+                controls = f"""
+                <a href="/vnc/" class="btn btn-view" target="_blank">📺 الدخول إلى المتصفح</a>
+                <a href="/stop" class="btn btn-stop">⏹️ إيقاف البث فوراً</a>
+                <div class="timer">⏱️ سيتم الإيقاف التلقائي خلال 20 دقيقة</div>
+                """
+            else:
+                controls = '<a href="/start" class="btn btn-start">▶️ تشغيل البث المرئي</a>'
 
-@app.route('/')
-def index():
-    return render_template_string(HTML_TEMPLATE)
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(HTML.format(status=status_text, controls=controls, is_running=is_running).encode('utf-8'))
+        else:
+            self.send_error(404)
 
-@app.route('/status')
-def status():
-    return jsonify({"online": is_vnc_running()})
-
-@app.route('/control/<action>')
-def control(action):
-    if action == "start":
-        subprocess.run(["supervisorctl", "start", "x11vnc", "novnc"])
-        return jsonify({"status": "started"})
-    elif action == "stop":
-        subprocess.run(["supervisorctl", "stop", "x11vnc", "novnc"])
-        return jsonify({"status": "stopped"})
-    return jsonify({"status": "error"})
-
-if __name__ == '__main__':
-    # Get port from environment or default to 8080
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
+    print("Dashboard serving at port", PORT)
+    httpd.serve_forever()

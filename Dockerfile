@@ -14,11 +14,11 @@ RUN apt-get update && apt-get install -y \
     websockify \
     curl \
     git \
-    python3-flask \
+    python3 \
     nginx \
     && rm -rf /var/lib/apt/lists/*
 
-# Install noVNC 1.4.0 from GitHub - use vnc_lite.html to avoid addTouchSpecificHandlers crash
+# Install noVNC 1.4.0 from GitHub
 RUN git clone --depth 1 --branch v1.4.0 https://github.com/novnc/noVNC.git /usr/share/novnc \
     && ln -s /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
 
@@ -27,11 +27,11 @@ ENV DISPLAY=:0
 ENV RESOLUTION=1024x768x16
 
 # Create necessary directories
-RUN mkdir -p /root/.vnc
+RUN mkdir -p /root/.vnc /var/run/nginx /var/log/nginx
 
-# Copy configuration files and extension
+# Copy configuration files
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY nginx.conf /nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY dashboard.py /dashboard.py
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
