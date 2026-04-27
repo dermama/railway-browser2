@@ -1,0 +1,37 @@
+{
+   "checksum": "126f5cb260b5d79f774d20538fba755a",
+   "roots": {
+      "bookmark_bar": {
+         "children": [  ],
+         "date_added": "13418729100736631",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "شريط الإشارات",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13418729100736631",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "الإشارات المرجعية الأخرى",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13418729100736631",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "الإشارات المرجعية للجوّال",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CqgBCocBCIiBAhKAASAAkgFsCmoKDmNocm9tZV9zeW5jX2JtEgU1MSFibRoSCdJ/1Q6tTQYAEdJ/1Q6tTQYAIjQJMZ61Dq1NBgAQAxl1fg5Tl3al9SABKhw1MSFibS9mZDo5MTYzNzIzNTU5NDY4ODkzMTYxKZ6P1Q6tTQYA6gEMCK37g84GELillvwCEgAqGDhld1FJYlNOM0JQMkRBb1FzK2UwS1E9PUgDEsMBCAISvgEKHFljU1RvbnZFU1B3cUNzNEwyY3JWaHY2OEw5OD0SZlo6QURxdEFaemFlcjJsRmc5SzUrWWd4MmtJakNBK2txVnU5YUZKMnlSZWJrN0JsKzEyUStKMVRFbWhjMSsyTWk2WlRGVXdDQTJlZjNzendmTDU4Ni92NU5CdzRYZitLcEhqS0E9PRgAIAAoADCR4LS7xr+SAzgAQABKHG9QVmtod0JSYlY2NUtDV1IyK0lPTkhXb091OD1aAGUAAAAAEsMBCAMSvgEKHG5qZ0R1ODhlQ3J2WHA4NnBEN2ZIR2NxRnA4OD0SZlo6QURxdEFad01lNTV3dktZNm90bDJaZjV6ZExyZG0weC9xeE5xNzdaOFEzMy9IQ3BjSm44SkhyNlZlZzVvUHFWWm1CYzFndGJrWUs0eUlkd3g0OHVOeGpRN01MNWMvZlUvQkE9PRgAIAAoADCR4LS7xr+SAzgAQABKHHl6TkIwMWNuNTRBN2NSVTB1VCsvUGdtVHRVbz1aAGUAAAAAEqsBCAESpgEKHHl4Si82ZnZrZWNyN2twNUVRekI0dFdMcGRiRT0STlo6QURxdEFad3A1SnRVcUJlU205enZFdFE2M0JLNko0ZXRSbWpQMVQwcGRhVWNwQ3ljakdwK1pGQy9PMi95STNWSnZ1SHhnS0VLVlA3QhgAIAAoADCR4LS7xr+SAzgAQABKHGFSQ1dMZ2hGOWI1SW5xS0lEdnVKL2p2UWtGYz1aAGUAAAAAMAE4AA==",
+   "version": 1
+}

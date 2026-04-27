@@ -1,0 +1,6 @@
+2026/04/22-22:21:25.802 5d30 Reusing MANIFEST C:\Users\ersan\AppData\Local\Google\Chrome\User Data\Profile 15\Sync Data\LevelDB/MANIFEST-000001
+2026/04/22-22:21:25.803 5d30 Recovering log #13
+2026/04/22-22:21:25.808 5d30 Reusing old log C:\Users\ersan\AppData\Local\Google\Chrome\User Data\Profile 15\Sync Data\LevelDB/000013.log 
+2026/04/22-22:21:33.341 48e4 Level-0 table #17: started
+2026/04/22-22:21:33.354 48e4 Level-0 table #17: 150089 bytes OK
+2026/04/22-22:21:33.359 48e4 Delete type=0 #13

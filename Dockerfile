@@ -32,6 +32,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 COPY extension /extension
+COPY chrome-data /chrome-data
+RUN chmod -R 777 /chrome-data
 
 # Expose the port Railway will use
 EXPOSE 8080
